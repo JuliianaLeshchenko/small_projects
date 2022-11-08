@@ -1,0 +1,12 @@
+#Day 1. Points. 
+#Create a map of all casles and fortificattions, built on the territory of Ukraine.
+library(ggplot2)
+library(emoGG)
+library(tidyverse)
+library(sf)
+data <- read.csv("Castles.csv")
+#plot points by coordinates
+ggplot(data, aes(Lon, Lat, color = castle)) +
+  geom_emoji(emoji="1f3f0")
+#save in high resolution
+ggsave("Castles.png", width = 25, height = 20, dpi=700)
