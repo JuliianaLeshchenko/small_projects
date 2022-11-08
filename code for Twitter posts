@@ -1,4 +1,4 @@
-#Day 1. Points. 
+###Day 1. Points. 
 #Create a map of all casles and fortificattions, built on the territory of Ukraine.
 library(ggplot2)
 library(emoGG)
@@ -8,3 +8,37 @@ ggplot(data, aes(Lon, Lat, color = castle)) +
   geom_emoji(emoji="1f3f0")
 #save in high resolution
 ggsave("Castles.png", width = 25, height = 20, dpi=700)
+
+###Day 3. Polygons.
+library(usdm)
+Belgium <- getData("GADM", country="BE", level=2) # Download Belgium boundary
+plot(Belgium)
+library(tidyverse) #can we actually code without it?
+library(rgdal) #to import shapefiles
+library(broom) #to convert shapefiles into the data frame structure we need
+library(wesanderson) #for some nice color palettes
+#dataprovided by Statbel https://statbel.fgov.be/en/news/11514-russians-and-5624-ukrainians-live-belgium
+data <- read.csv("Ukraine.csv", encoding = "UTF-8", header = T, stringsAsFactors = F)
+data$id <- as.character(data$id)
+class(data$id)
+regional_df <- tidy(Belgium)
+#Joining
+regional_df2 <- left_join(regional_df, data, by="id")
+summary(regional_df)
+library(ggplot2)
+
+map1<-ggplot(regional_df2, aes( x = long, y = lat, group=group)) +
+  geom_polygon(aes(fill = value), color = "black")
+map1
+
+map2 <- map1 + scale_fill_gradient(low = "aquamarine", high =  "blue", na.value = "grey50")+
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank(),
+        axis.title.y=element_blank(),
+        axis.title.x=element_blank(),
+        rect = element_blank()) +
+  labs(title="Ukrainians among the population of Belgium, calculated as a share of 1",
+       subtitle="Data obtained from statbel.fgov.be",
+       caption = "situation on 1 January 2021")
+map2
