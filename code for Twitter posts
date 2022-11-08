@@ -2,8 +2,6 @@
 #Create a map of all casles and fortificattions, built on the territory of Ukraine.
 library(ggplot2)
 library(emoGG)
-library(tidyverse)
-library(sf)
 data <- read.csv("Castles.csv")
 #plot points by coordinates
 ggplot(data, aes(Lon, Lat, color = castle)) +
