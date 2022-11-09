@@ -9,6 +9,44 @@ ggplot(data, aes(Lon, Lat, color = castle)) +
 #save in high resolution
 ggsave("Castles.png", width = 25, height = 20, dpi=700)
 
+###DAy 2. Lines.
+
+install.packages("plotly")
+library(plotly)
+library(dplyr)
+# airport locations
+air <- read.csv("air.csv", encoding = "UTF-8", header = T, stringsAsFactors = F)
+# flights between airports
+flights <- read.csv("flights.csv", encoding = "UTF-8", header = T, stringsAsFactors = F)
+flights$id <- seq_len(nrow(flights))
+
+# map projection
+geo <- list(
+  scope = 'europe',
+  projection = list(type = 'azimuthal equal area'),
+  showland = TRUE,
+  landcolor = toRGB("gray95"),
+  countrycolor = toRGB("gray80")
+)
+
+fig <- plot_geo(locationmode = 'europe', color = I("blue"))
+fig <- fig %>% add_markers(
+  data = air, x = ~long, y = ~lat, text = ~airport,
+  size = ~cnt, hoverinfo = "text", alpha = 0.5
+)
+fig <- fig %>% add_segments(
+  data = group_by(flights, id),
+  x = ~start_lon, xend = ~end_lon,
+  y = ~start_lat, yend = ~end_lat,
+  alpha = 0.3, size = I(1), hoverinfo = "none"
+)
+fig <- fig %>% layout(
+  title = 'Juliana: flight paths<br>30DayMapChallenge Day 2 Lines',
+  geo = geo, showlegend = FALSE, height=800
+)
+
+fig
+
 ###Day 3. Polygons.
 library(usdm)
 Belgium <- getData("GADM", country="BE", level=2) # Download Belgium boundary
