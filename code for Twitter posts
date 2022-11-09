@@ -15,6 +15,7 @@ install.packages("plotly")
 library(plotly)
 library(dplyr)
 # airport locations
+### reference HOW TO READ FROM GITHUB air <- read.csv('https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv')
 air <- read.csv("air.csv", encoding = "UTF-8", header = T, stringsAsFactors = F)
 # flights between airports
 flights <- read.csv("flights.csv", encoding = "UTF-8", header = T, stringsAsFactors = F)
