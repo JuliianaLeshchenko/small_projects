@@ -81,3 +81,23 @@ map2 <- map1 + scale_fill_gradient(low = "aquamarine", high =  "blue", na.value 
        subtitle="Data obtained from statbel.fgov.be",
        caption = "situation on 1 January 2021")
 map2
+
+### Pixel map
+Ukraine <- getData("GADM", country="UA", level=1)
+plot(Ukraine)
+ggplot(Ukraine, aes(long,lat, group=group)) +
+  geom_polygon() +
+  coord_map() +
+  theme_void()
+#here’s is the tip for creating a pixel effect : round the long and lat, 
+#in order to make the border more squared (now, we’ll also fill according to groups)
+
+p <- ggplot(Ukraine, aes(round(long, 1),round(lat,1), group=group,fill = as.factor(group))) +
+  geom_polygon() +
+  guides(fill=FALSE) +
+  coord_map() +
+  theme_void()
+library(dutchmasters)  
+devtools::install_github("EdwinTh/dutchmasters")
+p + scale_fill_dutchmasters(palette = "view_of_Delft")
+
