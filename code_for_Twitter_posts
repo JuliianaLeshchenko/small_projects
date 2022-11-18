@@ -102,7 +102,7 @@ devtools::install_github("EdwinTh/dutchmasters")
 p + scale_fill_dutchmasters(palette = "view_of_Delft")
 
 ### make own palette
-
+# credits: https://cano-barbacil.wixsite.com/canobarbacil/post/create-your-own-color-palette-in-r
 library(ggplot2)
 library(scales)
 library(ggpubr)
