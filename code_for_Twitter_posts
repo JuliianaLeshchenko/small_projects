@@ -101,3 +101,80 @@ library(dutchmasters)
 devtools::install_github("EdwinTh/dutchmasters")
 p + scale_fill_dutchmasters(palette = "view_of_Delft")
 
+### make own palette
+
+library(ggplot2)
+library(scales)
+library(ggpubr)
+#We create a named vector ('mycolors ') with all the colors we want to include in our palette. 
+#To obtain a nice color combination you can use some webs like colorschemedesigner.com.
+mycolors <- c(
+  `violet`= "#332E4C",
+  `pink`= "#AB486E",
+  `darkviolet`='#463751',
+  `brightviolet`='#2D254C',
+  `paleorange`='#CAB17F',
+  `darkgrape`='#493F62',
+  `forestgreen`='#475F55',
+  `grape`='#AC4844',
+  `fireorange`='#393460',
+  `grassgreen`='#62A163')
+show_col(mycolors)
+mycols <- function(...) {
+  cols <- c(...)
+  if (is.null(cols))
+    return (mycolors)
+  mycolors[cols]
+}
+#Next, we write a function called 'mycols' that extracts the hex codes from this vector by name.
+mycols <- function(...) {
+  cols <- c(...)
+  if (is.null(cols))
+  return (mycolors)
+  mycolors[cols]
+}
+#combine our selected colors into different palettes (various combination of colors):
+mypalettes <- list(
+  `4reactor` = mycols("violet","pink","darkviolet", 'brightviolet', 'paleorange', 'darkgrape', 'forestgreen', 'grape', 'fireorange', 'grassgreen'))
+  
+#write a function to access and interpolate them:
+reactor_pal <- function(palette = "4reactor", reverse = FALSE, ...) {
+  pal <- mypalettes[[palette]]
+  if (reverse) pal <- rev(pal)
+  colorRampPalette(pal, ...)
+}
+#function allows to get a pallete by name from the list. 
+#It also has a boolean condition determining whether to reverse the color order or not, and additional arguments to pass on to colorRampPallete():
+reactor_pal("4reactor")
+function (n) 
+{
+x <- ramp(seq.int(0, 1, length.out = n))
+if (ncol(x) == 4L) 
+rgb(x[,1L],x[,2L],x[, 3L],x[,4L], maxColorValue = 255)
+else rgb(x[, 1L], x[, 2L], x[, 3L], maxColorValue = 255)
+}
+<bytecode: 0x000000000c23d200>
+<environment: 0x0000000016033a70>
+#create custom scales for ggplot2. 
+#We create one function for color and another for fill, and each contains a boolean argument for the relevant aesthetic being discrete or not:
+scale_color_reactor <- function(palette = "main", discrete = TRUE, reverse = FALSE, ...) {
+  pal <- freshwater_pal(palette = palette, reverse = reverse)
+  
+  if (discrete) {
+    discrete_scale("colour", paste0("reactor_", palette), palette = pal, ...)
+  } else {
+    scale_color_gradientn(colours = pal(256), ...)
+  }
+}
+
+scale_fill_reactor <- function(palette = "main", discrete = TRUE, reverse = FALSE, ...) {
+  pal <- freshwater_pal(palette = palette, reverse = reverse)
+  
+  if (discrete) {
+    discrete_scale("fill", paste0("reactor_", palette), palette = pal, ...)
+  } else {
+    scale_fill_gradientn(colours = pal(256), ...)
+  }
+}
+#try new palettes
+p+ scale_fill_reactor(discrete = TRUE, palette = "4reactor")
