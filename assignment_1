@@ -1,0 +1,33 @@
+# Load the datasets
+library(openxlsx)
+potential_customers <- read.xlsx("potential-customers.xlsx")
+existing_customers <- read.xlsx("existing-customers.xlsx")
+head(potential_customers)
+
+# Create a linear regression model to predict income
+income_model <- lm(class ~ ., data = existing_customers)
+
+# Use the model to predict income for potential customers
+potential_customers$Income <- predict(income_model, newdata = potential_customers)
+
+# View the predicted income for potential customers
+head(potential_customers$Income)
+
+# Merge the datasets on the common column
+merged_data <- merge(potential_customers, existing_customers, by = "RowID", all.x = TRUE)
+
+# Calculate the response rate for each income group
+high_income_response_rate <- 0.1
+low_income_response_rate <- 0.05
+response_rate <- ifelse(merged_data$class == "<=50K", high_income_response_rate, low_income_response_rate)
+
+# Calculate the expected profit for each person
+high_income_profit <- 980
+low_income_cost <- 310
+promotion_cost <- 10
+
+expected_profit <- ifelse(merged_data$class == "<=50K", high_income_profit - promotion_cost, -low_income_cost - promotion_cost)
+
+# Calculate the total expected profit
+total_expected_profit <- sum(response_rate * expected_profit)
+total_expected_profit
