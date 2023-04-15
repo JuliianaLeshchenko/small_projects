@@ -41,4 +41,4 @@ promotion_cost <- 10
 expected_profit <- ifelse(merged_data$class.y == "0", high_income_profit - promotion_cost, -low_income_cost - promotion_cost)
 # Calculate the total expected profit
 total_expected_profit <- sum(response_rate * expected_profit)
-[1] 56749
+[1] 56749 EUROs
