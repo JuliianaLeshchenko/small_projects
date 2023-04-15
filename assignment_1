@@ -1,33 +1,44 @@
-# Load the datasets
-library(openxlsx)
-potential_customers <- read.xlsx("potential-customers.xlsx")
-existing_customers <- read.xlsx("existing-customers.xlsx")
+# Load the dataset of existing customers
+existing_customers <- read.csv("existing-customers.csv")
+data_df<- as.data.frame(existing_customers)
+
+# Remove rows with missing values
+data_df<-data_df[complete.cases(data_df),]
+head(data_df)
+
+# Convert "class" variable to numerical
+data_df$class <- ifelse(data_df$class == "<=50K", 0, 1)
+head(data_df)
+unique(data_df$class)
+
+# Subset the data to create a smaller sample for modeling
+existing_customers_sub <- data_df[1:2000, ]
+
+# Remove rows with missing values
+existing_customers_sub<-existing_customers_sub[complete.cases(existing_customers_sub),]
+
+library("rpart") 
+income_model1 <- rpart(class ~ ., data = existing_customers_sub)
+potential_customers$class <- predict(income_model1, newdata = potential_customers)
 head(potential_customers)
-
-# Create a linear regression model to predict income
-income_model <- lm(class ~ ., data = existing_customers)
-
-# Use the model to predict income for potential customers
-potential_customers$Income <- predict(income_model, newdata = potential_customers)
-
-# View the predicted income for potential customers
-head(potential_customers$Income)
+unique(potential_customers$class)
 
 # Merge the datasets on the common column
-merged_data <- merge(potential_customers, existing_customers, by = "RowID", all.x = TRUE)
+merged_data <- merge(potential_customers, data_df, by = "RowID", all.x = TRUE)
+head(merged_data)
 
 # Calculate the response rate for each income group
 high_income_response_rate <- 0.1
 low_income_response_rate <- 0.05
-response_rate <- ifelse(merged_data$class == "<=50K", high_income_response_rate, low_income_response_rate)
+
+# Calculate the response rate for each income group
+response_rate <- ifelse(merged_data$class.y == "0", low_income_response_rate, high_income_response_rate)
 
 # Calculate the expected profit for each person
 high_income_profit <- 980
 low_income_cost <- 310
 promotion_cost <- 10
-
-expected_profit <- ifelse(merged_data$class == "<=50K", high_income_profit - promotion_cost, -low_income_cost - promotion_cost)
-
+expected_profit <- ifelse(merged_data$class.y == "0", high_income_profit - promotion_cost, -low_income_cost - promotion_cost)
 # Calculate the total expected profit
 total_expected_profit <- sum(response_rate * expected_profit)
-total_expected_profit
+[1] 56749
