@@ -27,6 +27,13 @@ potential_customers$class <- predict(income_model1, newdata = potential_customer
 head(potential_customers)
 unique(potential_customers$class)
 
+# Rename the "RowID" column in "potential_customers"
+new_row_names <- paste0("Row", 0:1999) enerate new row names using paste and a loop
+potential_customers$RowID <- new_row_names # Assign new row names to the data frame
+
+# Convert the "RowID" column to a factor
+potential_customers$RowID <- as.factor(potential_customers$RowID)
+
 # Merge the datasets on the common column
 merged_data <- merge(potential_customers, data_df, by = "RowID", all.x = TRUE)
 head(merged_data)
