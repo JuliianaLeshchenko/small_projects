@@ -17,6 +17,10 @@ existing_customers_sub <- data_df[1:2000, ]
 # Remove rows with missing values
 existing_customers_sub<-existing_customers_sub[complete.cases(existing_customers_sub),]
 
+# Load the dataset of potential customers
+potential_customers <- read.csv("potential-customers.csv")
+data_df<- as.data.frame(potential_customers)
+
 library("rpart") 
 income_model1 <- rpart(class ~ ., data = existing_customers_sub)
 potential_customers$class <- predict(income_model1, newdata = potential_customers)
