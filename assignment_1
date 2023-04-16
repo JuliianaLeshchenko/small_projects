@@ -22,6 +22,7 @@ data_df<- as.data.frame(potential_customers)
 
 library("rpart") 
 income_model <- rpart(class ~ ., data = existing_customers_sub)
+summary(income_model)
 # Use the match function to rewrite column with matching RowID values from existing customers subset
 data_df1$RowID <- match(data_df1$RowID, existing_customers_sub$RowID)
 # Remove rows with NAs in the matched_RowID column
