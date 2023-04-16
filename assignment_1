@@ -18,7 +18,7 @@ existing_customers_sub <- data_df[1:2000, ]
 existing_customers_sub<-existing_customers_sub[complete.cases(existing_customers_sub),]
 
 potential_customers <- read.csv("potential-customers.csv")
-data_df<- as.data.frame(potential_customers)
+data_df1<- as.data.frame(potential_customers)
 
 library("rpart") 
 income_model <- rpart(class ~ ., data = existing_customers_sub)
