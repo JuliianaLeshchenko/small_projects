@@ -17,32 +17,35 @@ existing_customers_sub <- data_df[1:2000, ]
 # Remove rows with missing values
 existing_customers_sub<-existing_customers_sub[complete.cases(existing_customers_sub),]
 
-# Load the dataset of potential customers
 potential_customers <- read.csv("potential-customers.csv")
 data_df<- as.data.frame(potential_customers)
 
 library("rpart") 
-income_model1 <- rpart(class ~ ., data = existing_customers_sub)
-potential_customers$class <- predict(income_model1, newdata = potential_customers)
-head(potential_customers)
-unique(potential_customers$class)
-
-# Rename the "RowID" column in "potential_customers"
-new_row_names <- paste0("Row", 0:1999) enerate new row names using paste and a loop
-potential_customers$RowID <- new_row_names # Assign new row names to the data frame
-
+income_model <- rpart(class ~ ., data = existing_customers_sub)
+# Use the match function to rewrite column with matching RowID values from existing customers subset
+data_df1$RowID <- match(data_df1$RowID, existing_customers_sub$RowID)
+# Remove rows with NAs in the matched_RowID column
+data_df1<-potential_customers[complete.cases(data_df1),]
+#in the variable "RowID" in the dataset "potential_customers" I got values 1 to 2000 and I need to rename them from Row0 to Row1999
+# Rename the values in "RowID" column in "potential_customers" 
+new_row_names <- paste0("Row", 0:1999)
+data_df1$RowID <- new_row_names
 # Convert the "RowID" column to a factor
-potential_customers$RowID <- as.factor(potential_customers$RowID)
+data_df1$RowID <- as.factor(data_df1$RowID) 
+# Check the values of native.country in both data frames
+unique(data_df1$native.country)
+unique(existing_customers_sub$native.country)
+# I need to remove rows, for which I can't make a prediction
+data_df1 <- subset(data_df1, !native.country %in% c("Ireland", "Vietnam")) #new countries in a potential customers dataset.
+
+data_df1$class <- predict(income_model, newdata = data_df1, na.action = na.pass)
 
 # Merge the datasets on the common column
-merged_data <- merge(potential_customers, data_df, by = "RowID", all.x = TRUE)
-head(merged_data)
+merged_data <- merge(data_df1, data_df, by = "RowID", all.x = TRUE)
+head(merged_data) #merged_data$RowID is also a list of ID of people to send a promotion
 
-# Calculate the response rate for each income group
 high_income_response_rate <- 0.1
 low_income_response_rate <- 0.05
-
-# Calculate the response rate for each income group
 response_rate <- ifelse(merged_data$class.y == "0", low_income_response_rate, high_income_response_rate)
 
 # Calculate the expected profit for each person
@@ -53,3 +56,4 @@ expected_profit <- ifelse(merged_data$class.y == "0", high_income_profit - promo
 # Calculate the total expected profit
 total_expected_profit <- sum(response_rate * expected_profit)
 [1] 56749 EUROs
+
