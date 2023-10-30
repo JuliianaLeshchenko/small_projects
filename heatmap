@@ -1,0 +1,39 @@
+getwd()
+# Replace 'your_username' with your actual username
+# This assumes your Documents folder is located in your home directory
+setwd("/Users/Juliana/Downloads")
+data = read.csv('ufo_sighting_data.csv')
+head(data)
+# Step 1: Filter the dataset to include only rows with 'US' in the 'country' column
+us_ufo_data <- data[data$country == "us", ]
+# Step 2: Create a table of UFO shapes for the filtered dataset
+ufo_shape_counts <- table(us_ufo_data$length_of_encounter_seconds)
+# Step 3: Sort UFO shapes by frequencies in descending order
+sorted_ufo_shapes <- names(ufo_shape_counts[order(-ufo_shape_counts)])
+
+#Step 4: Plot the histogram with violet color and labeled bars, sorted by frequency
+barplot(ufo_shape_counts[sorted_ufo_shapes], 
+        main = "UFO duration Histogram (USA)",
+        xlab = " ",
+        ylab = " ",
+        col = "plum",
+        border = "black",
+        names.arg = sorted_ufo_shapes,  # Sorted labels for each bar
+        cex.names = 0.7,  # Adjust the size of labels if needed
+        las = 2)  # Rotate x-axis labels vertically for better readability
+png("/Users/Juliana/Downloads/ufo_shape_histogram.png", width = 800, height = 600, units = "px", res = 300)
+
+library(ggplot2)
+library(dplyr)
+
+# Group data by state_province and count observations
+state_counts <- us_ufo_data %>%
+  group_by(state.province) %>%
+  summarize(count = n())
+# Create a radial bar chart
+ggplot(state_counts, aes(x = reorder(state.province, -count), y = count)) +
+  geom_bar(stat = "identity", fill = 'plum') +
+  coord_polar(start = 0) +
+  labs(title = "Observations per State/Province (Radial Bar Chart)", x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
