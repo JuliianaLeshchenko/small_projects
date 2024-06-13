@@ -9,7 +9,7 @@ ggplot(data, aes(Lon, Lat, color = castle)) +
 #save in high resolution
 ggsave("Castles.png", width = 25, height = 20, dpi=700)
 
-###DAy 2. Lines.
+###Day 2. Lines.
 
 install.packages("plotly")
 library(plotly)
