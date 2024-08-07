@@ -1,0 +1,105 @@
+data<- read.csv("Hata_na_tata.csv", encoding = "UTF-8", header = T)
+
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(forcats)
+
+# Bar Plot of Kids by Region
+ggplot(data, aes(x = fct_reorder(Region, Kids, .fun = sum, .desc = TRUE), y = Kids)) +
+  geom_bar(stat = "identity", fill = "blue") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Number of Kids by Region", x = "Region", y = "Number of Kids")
+
+# Scatter Plot of Views vs. Likes
+# Create bins for Likes to cluster surnames, with 1 being the highest group
+data <- data %>%
+  mutate(Likes_Group = cut(Likes, breaks = quantile(Likes, probs = seq(0, 1, by = 0.2), na.rm = TRUE), 
+                           include.lowest = TRUE, labels = 5:1))
+
+# Define custom colors for the plot
+custom_colors <- c("1" = "#1b9e77", "2" = "#d95f02", "3" = "#7570b3", "4" = "#e7298a", "5" = "#66a61e")
+
+# Scatter Plot of Views vs. Likes, with Surnames and Likes clustering
+ggplot(data, aes(x = Views, y = Likes, color = as.factor(Likes_Group), label = Surname)) +
+  geom_point(size = 3) +
+  geom_text(vjust = -1, hjust = 1.1, check_overlap = TRUE) +
+  scale_color_manual(values = custom_colors, name = "Likes Group") +
+  scale_x_continuous(labels = scales::comma) +
+  labs(title = "Who is the most popuar dad?", x = "Views", y = "Likes") +
+  theme_minimal()
+
+# Install and load necessary libraries
+install.packages("ggplot2")
+install.packages("ggmap")
+install.packages("dplyr")
+
+library(ggplot2)
+library(ggmap)
+library(dplyr)
+
+# Clean the data by removing rows with missing values or identical start and end points
+cleaned_data <- data %>%
+  filter(!is.na(Longitude_0) & !is.na(Latitude_0) & !is.na(Longitude_1) & !is.na(Latitude_1)) %>%
+  filter(!(Longitude_0 == Longitude_1 & Latitude_0 == Latitude_1))
+
+# Define the world map
+world_map <- borders("world", colour="gray50", fill="gray50")
+
+# Create a base plot with the world map
+p <- ggplot() + world_map
+
+# Add travel paths to the map
+p <- p + geom_curve(data = cleaned_data, 
+                    aes(x = Longitude_0, y = Latitude_0, 
+                        xend = Longitude_1, yend = Latitude_1),
+                    curvature = 0.2, color = "blue", size = 0.5, 
+                    arrow = arrow(length = unit(0.2, "cm")))
+
+# Add starting and ending points
+p <- p + geom_point(data = cleaned_data, aes(x = Longitude_0, y = Latitude_0), color = "red", size = 2)
+p <- p + geom_point(data = cleaned_data, aes(x = Longitude_1, y = Latitude_1), color = "green", size = 2)
+
+# Customize the plot
+p <- p + theme_minimal() +
+  labs(title = "Travel Connections",
+       x = "Longitude",
+       y = "Latitude")
+
+# Print the plot
+print(p)
+
+install.packages("leaflet")
+install.packages("leaflet.extras")
+library(leaflet)
+library(leaflet.extras)
+library(dplyr)
+library(readr)
+
+# Load the data
+data <- read_csv("/mnt/data/Hata_na_tata.csv")
+
+# Clean the data by removing rows with missing values or identical start and end points
+cleaned_data <- data %>%
+  filter(!is.na(Longitude_0) & !is.na(Latitude_0) &
+           !is.na(Longitude_1) & !is.na(Latitude_1) &
+           !(Longitude_0 == Longitude_1 & Latitude_0 == Latitude_1))
+
+# Create the leaflet map
+map <- leaflet() %>%
+  addTiles() %>%
+  # Add starting points
+  addCircleMarkers(data = cleaned_data, ~Longitude_0, ~Latitude_0, color = "red", radius = 5, popup = ~Settlement) %>%
+  # Add ending points
+  addCircleMarkers(data = cleaned_data, ~Longitude_1, ~Latitude_1, color = "green", radius = 5, popup = ~Rest)
+
+# Add lines between starting and ending points
+for(i in 1:nrow(cleaned_data)) {
+  map <- map %>%
+    addPolylines(lng = c(cleaned_data$Longitude_0[i], cleaned_data$Longitude_1[i]), 
+                 lat = c(cleaned_data$Latitude_0[i], cleaned_data$Latitude_1[i]), 
+                 color = "blue", weight = 2)
+}
+
+# Print the map
+map
