@@ -1,0 +1,187 @@
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+getwd()
+setwd()
+# File path for the uploaded dataset
+data <- read.csv("2024_year_in pixels.csv", stringsAsFactors = FALSE)
+
+# Convert Date column to Date format
+data$Date <- as.Date(data$Date)
+
+# Ensure all days in 2024 are present
+all_days <- data.frame(Date = seq(as.Date("2024-01-01"), as.Date("2024-12-31"), by = "day"))
+data <- left_join(all_days, data, by = "Date")
+
+# Create a sequential day-of-the-year column for grid layout
+data$DayOfYear <- as.numeric(format(data$Date, "%j"))
+
+# Define row and column positions for the grid
+data <- data %>%
+  mutate(
+    Row = (20 - ((DayOfYear - 1) %/% 20)) + 1,  # Reversed rows, so Jan 1 is at the top
+    Col = (DayOfYear - 1) %% 20 + 1             # Columns, wrapping after every 20 days
+  )
+
+# Define a pastel color palette for emotions
+emotion_colors <- c(
+  'Happy' = '#FFB3E6',        # Pastel Pink
+  'Excited' = '#FFB347',      # Pastel Orange
+  'Neutral' = '#D3D3D3',      # Light Gray
+  'Stressed' = '#FF6666',     # Soft Red
+  'Sad' = '#A2C2E1',          # Pastel Blue
+  'Anxious' = '#FF99CC',      # Pastel Rose
+  'Grateful' = '#B2E7D7',     # Pastel Turquoise
+  'Frustrated' = '#FF8C94',   # Light Coral
+  'Inspired' = '#D1E8B9',     # Pastel Lime Green
+  'Loved' = '#FFB6C1',        # Light Pink
+  'Surprised' = '#FFF2A1',    # Soft Yellow
+  'Tired' = '#B8B8B8',        # Soft Gray
+  'Confident' = '#A3D8F4',    # Soft Sky Blue
+  'Peaceful' = '#B5E0A6'     # Pastel Green
+)
+
+# Ensure emotions in your dataset have corresponding colors
+data$Emotion <- factor(data$Emotion, levels = names(emotion_colors))
+
+# Plot the visualization
+ggplot(data, aes(x = Col, y = Row, fill = Emotion)) +
+  geom_tile(color = "white", width = 0.9, height = 0.9) +  # Small square tiles
+  scale_fill_manual(values = emotion_colors) +
+  labs(
+    title = "Year in Pixels: Emotions Over the Year 2024",
+    x = "",
+    y = "",
+    fill = "Emotion"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    plot.title = element_text(hjust = 0.5)
+  )
+
+# Calculate the percentage of each emotion
+emotion_percentage <- data %>%
+  group_by(Emotion) %>%  # Group by the 'Emotion' column
+  summarise(Count = n()) %>%  # Count occurrences of each emotion
+  mutate(Percentage = (Count / sum(Count)) * 100)  # Calculate percentage
+
+# Display the results
+emotion_percentage
+
+# Define a pastel color palette for emotions
+emotion_colors <- c(
+  'Happy' = '#FFB3E6',        # Pastel Pink
+  'Excited' = '#FFB347',      # Pastel Orange
+  'Neutral' = '#D3D3D3',      # Light Gray
+  'Stressed' = '#FF6666',     # Soft Red
+  'Sad' = '#A2C2E1',          # Pastel Blue
+  'Anxious' = '#FF99CC',      # Pastel Rose
+  'Grateful' = '#B2E7D7',     # Pastel Turquoise
+  'Frustrated' = '#FF8C94',   # Light Coral
+  'Inspired' = '#D1E8B9',     # Pastel Lime Green
+  'Loved' = '#FFB6C1',        # Light Pink
+  'Surprised' = '#FFF2A1',    # Soft Yellow
+  'Tired' = '#B8B8B8',        # Soft Gray
+  'Confident' = '#A3D8F4',    # Soft Sky Blue
+  'Peaceful' = '#B5E0A6',     # Pastel Green
+  'No Data' = '#F2F2F2'       # Light Beige
+)
+
+# Calculate the percentage of each emotion
+emotion_percentage <- data %>%
+  group_by(Emotion) %>%  # Group by the 'Emotion' column
+  summarise(Count = n()) %>%  # Count occurrences of each emotion
+  mutate(Percentage = (Count / sum(Count)) * 100) %>%  # Calculate percentage
+  arrange(desc(Percentage))  # Arrange by percentage in descending order
+
+# Visualize the emotions by percentage in a bar plot
+ggplot(emotion_percentage, aes(x = reorder(Emotion, -Percentage), y = Percentage, fill = Emotion)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = emotion_colors) +  # Use the custom color palette
+  labs(
+    title = "Emotion Distribution in 2024",
+    x = "Emotion",
+    y = "Percentage",
+    fill = "Emotion"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for better readability
+    panel.grid = element_blank()  # Remove grid lines
+  )
+
+# Define a pastel color palette for activities (without emojis)
+activity_colors <- c(
+  'Work' = '#1F77B4',        # Blue
+  'Study' = '#FF7F0E',       # Orange
+  'Exercise' = '#2CA02C',    # Green
+  'Socialize' = '#D62728',   # Red
+  'Create' = '#9467BD',      # Purple
+  'Relaxation' = '#8C564B',  # Brown
+  'Explore' = '#E377C2',     # Pink
+  'Chores' = '#7F7F7F',      # Gray
+  'Reflect' = '#BCBD22',     # Olive Green
+  'Learn' = '#17BECF',       # Teal
+  'Family' = '#FFBB78',      # Light Orange
+  'Hobbies' = '#98C9E4',     # Light Blue
+  'Health' = '#F5B800',      # Yellow
+  'Nature' = '#00BFAE',      # Aqua
+  'Entertainment' = '#FF6619', # Coral
+  'Travel' = '#B82E0B',      # Burgundy
+  'Sick' = '#7D5B6A'         # Taupe
+)
+# Ensure the 'Activity' column is a factor with appropriate levels (activities without emojis)
+data$Activity <- factor(data$Activity, levels = names(activity_colors))
+
+# Define row and column positions for the grid
+data <- data %>%
+  mutate(
+    Row = (20 - ((DayOfYear - 1) %/% 20)) + 1,  # Reversed rows, so Jan 1 is at the top
+    Col = (DayOfYear - 1) %% 20 + 1             # Columns, wrapping after every 20 days
+  )
+
+# Plot the grid visualization for activities
+ggplot(data, aes(x = Col, y = Row, fill = Activity)) +
+  geom_tile(color = "white", width = 0.9, height = 0.9) +  # Small square tiles
+  scale_fill_manual(values = activity_colors) +  # Use the custom pastel color palette
+  labs(
+    title = "Year in Pixels: Activities Over the Year 2024",
+    x = "",
+    y = "",
+    fill = "Activity"
+  ) +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    plot.title = element_text(hjust = 0.5)
+  )
+
+# Calculate the percentage of each activity
+activity_percentage <- data %>%
+  group_by(Activity) %>%  # Group by the 'Activity' column
+  summarise(Count = n()) %>%  # Count occurrences of each activity
+  mutate(Percentage = (Count / sum(Count)) * 100) %>%  # Calculate percentage
+  arrange(desc(Percentage))  # Arrange by percentage in descending order
+
+# Visualize the activity distribution by percentage in a bar plot
+ggplot(activity_percentage, aes(x = reorder(Activity, -Percentage), y = Percentage, fill = Activity)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = activity_colors) +  # Use the custom color palette
+  labs(
+    title = "Activity Distribution in 2024",
+    x = "Activity",
+    y = "Percentage",    
+    fill = "Activity"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for better readability
+    panel.grid = element_blank()  # Remove grid lines
+  )
