@@ -185,3 +185,46 @@ ggplot(activity_percentage, aes(x = reorder(Activity, -Percentage), y = Percenta
     axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for better readability
     panel.grid = element_blank()  # Remove grid lines
   )
+#### 4 VISUAL - locations
+install.packages(c("sf", "rnaturalearth", "rnaturalearthdata"))
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+# Aggregate data: Count number of days spent in each location
+location_summary <- data %>%
+  group_by(Location, Latitude, Longitude) %>%
+  summarise(Days_Spent = n()) %>%
+  ungroup()
+# Load world map data
+world <- ne_countries(scale = "medium", returnclass = "sf")
+# Plot the heatmap
+ggplot() +
+  geom_sf(data = world, fill = "gray90", color = "white") +  # Base world map
+  geom_point(data = location_summary, 
+             aes(x = Longitude, y = Latitude, size = Days_Spent, color = Days_Spent),
+             alpha = 0.5) + 
+  scale_size(range = c(3, 4)) +  # Adjust point size based on days spent
+  scale_color_gradient(low = "lightblue", high = "blue") +  # Color scale
+  labs(title = "Heatmap of Time Spent in Locations (2024)", 
+       x = "Longitude", 
+       y = "Latitude", 
+       color = "Days Spent") +
+  theme_minimal()
+#5 visual - interactive map 
+install.packages("leaflet")
+library(leaflet)
+# Create a Leaflet interactive map
+leaflet(location_summary) %>%
+  addTiles() %>%  # Use OpenStreetMap tiles (free and no API key needed)
+  addCircleMarkers(
+    ~Longitude, ~Latitude, 
+    radius = ~sqrt(Days_Spent) * 1.5,  # Adjust marker size based on days spent
+    color = "blue",
+    fillOpacity = 0.6,
+    popup = ~paste0("<b>Location:</b> ", Location, 
+                    "<br><b>Days Spent:</b> ", Days_Spent)
+  ) %>%
+  addLegend("bottomright", 
+            pal = colorNumeric("Reds", domain = location_summary$Days_Spent), 
+            values = location_summary$Days_Spent, 
+            title = "Days Spent")
